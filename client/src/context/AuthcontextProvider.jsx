@@ -16,6 +16,7 @@ export const AuthContextProvider = ({ children }) => {
     useEffect(() => {
         async function fetchUser() {
             try {
+                console.log(authUser);
                 const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/verify`, {
                     method: "GET",
                     headers: {

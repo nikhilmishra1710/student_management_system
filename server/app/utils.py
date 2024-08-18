@@ -1,17 +1,20 @@
 import datetime
-import jwt
 from .config import Config
+from jwt import ExpiredSignatureError, InvalidTokenError, decode, encode
 
 def format_date(date):
     return date.strftime('%Y-%m-%d')
 
 def generate_token(user_id):
-    return jwt.encode({'user_id': user_id, 'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1)}, Config.SECRET_KEY, algorithm='HS256')
+    return encode({'user_id': user_id, 'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1)}, Config.SECRET_KEY, algorithm='HS256')
+
 
 def verify_token(token):
     try:
-        return jwt.decode(token, Config.SECRET_KEY, algorithms=['HS256'])
-    except jwt.ExpiredSignatureError:
+        return decode(token, Config.SECRET_KEY, algorithms=['HS256'])
+    except ExpiredSignatureError:
+        # Token has expired
         return None
-
-# Other utility functions can be added here
+    except InvalidTokenError:
+        # Token is invalid (could be malformed, etc.)
+        return None

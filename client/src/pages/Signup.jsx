@@ -3,12 +3,16 @@ import { useState } from "react";
 
 export default function Signup() {
     const [formData, setFormData] = useState({
-        username: "",
+        fname: "",
+        sname: "",
         email: "",
         password: "",
+        phone: "",
+        cnfpassword: "",
         type: "",
     });
-
+    const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
     const handleInput = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
@@ -29,12 +33,29 @@ export default function Signup() {
     };
 
     const handleSubmit = async (e) => {
+        setLoading(true);
         e.preventDefault();
         try {
             console.log(formData);
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/signup`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(formData),
+            });
+            const data = await response.json();
+            console.log(data);
+            if(response.status === 201){
+                
+                setTimeout(() => {
+                window.location.href = "/login";
+                },1000);
+            }
         } catch (error) {
             console.log("error occured");
         }
+        setLoading(false);
     };
 
     return (
@@ -53,6 +74,7 @@ export default function Signup() {
                                 name="fname"
                                 type="text"
                                 placeholder="John"
+                                value={formData.fname}
                                 onChange={handleInput}
                             />
                         </div>
@@ -66,6 +88,7 @@ export default function Signup() {
                                 name="sname"
                                 type="text"
                                 placeholder="Doe"
+                                value={formData.sname}
                                 onChange={handleInput}
                             />
                         </div>
@@ -80,55 +103,87 @@ export default function Signup() {
                             name="email"
                             type="email"
                             placeholder="johndoe@email.com"
+                            value={formData.email}
                             onChange={handleInput}
                         />
                     </div>
-                    <div class="mb-4">
-                        <label class="block text-gray-700 font-bold mb-2" for="phone">
-                            Phone Number
-                        </label>
-                        <input
-                            class="shadow appearance-none border rounded w-full min-w-[250px] py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                            id="phone"
-                            type="tel"
-                            name="phone"
-                            placeholder="1234567890"
-                            onChange={handleInput}
-                        />
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-gray-700 font-bold mb-2" for="phone">
-                            Password
-                        </label>
-                        <input
-                            class="shadow appearance-none border rounded w-full min-w-[250px] py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                            id="password"
-                            type="password"
-                            name="password"
-                            placeholder="*******"
-                            onChange={handleInput}
-                        />
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-gray-700 font-bold mb-2" for="phone">
-                            Confirm Password
-                        </label>
-                        <span className="flex">
+                    <div className="flex md:flex-row flex-col gap-2">
+                        <div class="mb-4">
+                            <label class="block text-gray-700 font-bold mb-2" for="phone">
+                                Phone Number
+                            </label>
                             <input
                                 class="shadow appearance-none border rounded w-full min-w-[250px] py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                id="cnfpassword"
-                                type="password"
-                                name="cnfpassword"
-                                placeholder="*******"
+                                id="phone"
+                                type="tel"
+                                name="phone"
+                                placeholder="1234567890"
+                                value={formData.phone}
                                 onChange={handleInput}
                             />
-                        </span>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 font-bold mb-2" for="phone">
+                                Type
+                            </label>
+                            <select
+                                class="shadow-md border rounded w-full min-w-[250px] py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                id="type"
+                                name="type"
+                                value={formData.type}
+                                onChange={handleInput}
+                            >
+                                <option value="" default disabled hidden>
+                                    Select Type
+                                </option>
+                                <option value="student">Student</option>
+                                <option value="instructor">Instructor</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                        </div>
                     </div>
-                    <span className="block text-gray-700 font-bold mb-2"><input type="checkbox" className="rounded-full" onClick={togglePassword}/>  Show Password</span>
+                    <div className="flex md:flex-row flex-col gap-2">
+                        <div class="mb-4">
+                            <label class="block text-gray-700 font-bold mb-2" for="phone">
+                                Password
+                            </label>
+                            <input
+                                class="shadow appearance-none border rounded w-full min-w-[250px] py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                id="password"
+                                type="password"
+                                name="password"
+                                placeholder="*******"
+                                value={formData.password}
+                                onChange={handleInput}
+                            />
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 font-bold mb-2" for="phone">
+                                Confirm Password
+                            </label>
+                            <span className="flex">
+                                <input
+                                    class="shadow appearance-none border rounded w-full min-w-[250px] py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                    id="cnfpassword"
+                                    type="password"
+                                    name="cnfpassword"
+                                    placeholder="*******"
+                                    value={formData.cnfpassword}
+                                    onChange={handleInput}
+                                />
+                            </span>
+                        </div>
+                    </div>
+                    <span className="block text-gray-700 font-bold mb-2">
+                        <input type="checkbox" className="rounded-full" onClick={togglePassword} /> Show Password
+                    </span>
 
                     <div class="mt-4 mb-4">
-                        Already have an account? <a href="/login" class="text-blue-500 hover:text-blue-800">Login</a>
-                        </div>
+                        Already have an account?
+                        <a href="/login" class="text-blue-500 hover:text-blue-800">
+                            Login
+                        </a>
+                    </div>
                     <div class="flex items-center justify-center mb-4">
                         <button class="bg-gray-900 text-white py-2 px-4 rounded hover:bg-gray-800 focus:outline-none focus:shadow-outline" type="submit">
                             Signup

@@ -1,47 +1,72 @@
 from flask import Blueprint, request, jsonify
 from ..models import Database
-from ..utils import generate_token,verify_token
+from ..utils import generate_token, verify_token
 
 bp = Blueprint('auth', __name__, url_prefix='/api/auth')
+
 
 @bp.route('/check', methods=['GET'])
 def check():
     return jsonify({'message': 'Server is running'}), 200
 
+
 @bp.route('/login', methods=['POST'])
 def login():
-    data = request.json
-    username = data.get('username')
-    password = data.get('password')
-    
-    db = Database()
-    user = db.fetch_one("SELECT * FROM Users WHERE username=%s AND password=%s", (username, password))
-    db.close()
+    try:
+        data = request.json
+        email = data.get('email')
+        password = data.get('password')
 
-    if user:
-        token = generate_token(user[0])
-        return jsonify({'token': token}), 200
-    else:
-        return jsonify({'message': 'Invalid credentials'}), 401
+        db = Database()
+        user = db.fetch_one(
+            "SELECT * FROM Users WHERE email=%s AND password=%s", (email, password))
+        
+        print(user)
+        if user:
+            
+            token = generate_token(user[0])
+            user_role = db.fetch_one("SELECT * FROM user_roles WHERE role_id=%s", (user[6],))
+            print(user_role)
+            db.close()
+            return jsonify({'token': token , 'role': user_role[1] }), 200
+        else:
+            db.close()
+            return jsonify({'message': 'Invalid credentials'}), 401
+    except Exception as e:
+        print(e)
+        return jsonify({'message': 'Login failed'}), 500
 
 @bp.route('/signup', methods=['POST'])
 def signup():
-    data = request.json
-    username = data.get('username')
-    password = data.get('password')
-    role_id = data.get('role_id')
+    try:
+        data = request.json
+        fname = data.get('fname')
+        sname = data.get('sname')
+        email = data.get('email')
+        phone = data.get('phone')
+        password = data.get('password')
+        role = data.get('type')
 
-    db = Database()
-    db.execute_query("INSERT INTO Users (username, password, role_id) VALUES (%s, %s, %s)", (username, password, role_id))
-    db.close()
+        db = Database()
 
-    return jsonify({'message': 'User created successfully'}), 201
+        role_data = db.fetch_one(
+            "SELECT * FROM user_roles where typename=%s", (role,))
+        role_id = role_data[0]
+        db.execute_query("INSERT INTO Users (first_name, last_name, email, phone, password, role_id) VALUES (%s, %s, %s, %s, %s, %s)", (fname, sname, email, phone, password, role_id))
+        db.close()
+        
+        return jsonify({'message': 'User created'}), 201
+    except Exception as e:
+        print(e)
+        return jsonify({'message': 'User creation failed'}), 500
+
 
 @bp.route('/logout', methods=['POST'])
 def logout():
     return jsonify({'message': 'Logged out successfully'}), 200
 
-@bp.route('/verify',methods=['GET'])
+
+@bp.route('/verify', methods=['GET'])
 def verify():
     token = request.headers.get('Authorization')
     if token:
@@ -54,6 +79,6 @@ def verify():
             return jsonify({'message': 'Token is valid'}), 200
         else:
             return jsonify({'message': 'Token is invalid'}), 401
-    
+
     else:
         return jsonify({'message': 'Token is invalid'}), 401

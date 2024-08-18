@@ -14,3 +14,21 @@ html {
 .IBM_Plex_Mono {
     font-family: "IBM Plex Mono";
 }
+
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #1d0045 #f3f4f6;
+}
+
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #11002a;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f3f4f6;
+}
