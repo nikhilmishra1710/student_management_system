@@ -19,6 +19,7 @@ class Database:
     def execute_query(self, query, params=None):
         self.cursor.execute(query, params)
         self.conn.commit()
+        return self.cursor.rowcount
 
     def fetch_all(self, query, params=None):
         self.cursor.execute(query, params)

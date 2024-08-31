@@ -14,8 +14,8 @@ def check():
 def login():
     try:
         data = request.json
-        email = data.get('email')
-        password = data.get('password')
+        email = data.get('email').strip(" ")
+        password = data.get('password').strip(" ")
 
         db = Database()
         user = db.fetch_one(
@@ -28,7 +28,7 @@ def login():
             user_role = db.fetch_one("SELECT * FROM user_roles WHERE role_id=%s", (user[6],))
             print(user_role)
             db.close()
-            return jsonify({'token': token , 'role': user_role[1] }), 200
+            return jsonify({'token': token , 'role': user_role[1],'name': user[1]+" "+user[2] }), 200
         else:
             db.close()
             return jsonify({'message': 'Invalid credentials'}), 401
@@ -40,12 +40,12 @@ def login():
 def signup():
     try:
         data = request.json
-        fname = data.get('fname')
-        sname = data.get('sname')
-        email = data.get('email')
-        phone = data.get('phone')
-        password = data.get('password')
-        role = data.get('type')
+        fname = data.get('fname').strip()
+        sname = data.get('sname').strip()
+        email = data.get('email').strip()
+        phone = data.get('phone').strip()
+        password = data.get('password').strip()
+        role = data.get('type').strip()
 
         db = Database()
 

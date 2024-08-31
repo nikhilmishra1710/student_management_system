@@ -12,6 +12,7 @@ export default function StudentDashboard() {
     const [subject, setSubject] = useState("");
     const [loading, setLoading] = useState(false);
     const [perfloading, setPerfLoading] = useState(false);
+    const [modal, setModal] = useState(false);
 
     useEffect(() => {
         async function fetchData() {
@@ -126,9 +127,29 @@ export default function StudentDashboard() {
     if (loading) {
         return <div className="flex-1 bg-[#f5f5f5] p-8 md:p-12 lg:p-16">Loading...</div>;
     }
+    if (modal) {
+        return <Modal authUser={authUser} modal={modal} setModal={setModal} />;
+    }
     return (
         <div className="flex-1 bg-[#f5f5f5] p-8 md:p-12 lg:p-16">
             <div className="max-w-[90%] mx-auto">
+                <div className="flex items-center mb-4 justify-between">
+                    <h1 className="text-2xl font-bold IBM_Plex_Mono">Welcome, {authUser.name}</h1>
+                    <div className="flex items-center gap-4">
+                        <button
+                            className="bg-[#0070f3] text-white px-4 py-2 rounded-md hover:bg-[#0060d3] transition-colors"
+                            onClick={() => {
+                                localStorage.removeItem("user-token");
+                                toast.success("Logged out successfully");
+                                setTimeout(() => {
+                                    window.location.href = "/login";
+                                }, 500);
+                            }}
+                        >
+                            Logout
+                        </button>
+                    </div>
+                </div>
                 <div className="grid md:grid-cols-2 gap-8">
                     <div className="bg-white rounded-lg shadow-md">
                         <div className="p-6">
@@ -138,7 +159,10 @@ export default function StudentDashboard() {
                         <div className="border-t px-6 py-4">
                             <div className="flex items-center justify-between">
                                 <h3 className="text-lg font-bold IBM_Plex_Mono">Subject List</h3>
-                                <button className="bg-[#0070f3] text-white px-4 py-2 rounded-md hover:bg-[#0060d3] transition-colors">Add Subject</button>
+
+                                <button className="bg-[#0070f3] text-white px-4 py-2 rounded-md hover:bg-[#0060d3] transition-colors" onClick={() => setModal(true)}>
+                                    Add Subject
+                                </button>
                             </div>
                             <div className="overflow-x-auto max-h-[250px] mt-4">
                                 <table className="w-full text-[0.8rem]">
@@ -154,7 +178,7 @@ export default function StudentDashboard() {
                                     </thead>
                                     <tbody>
                                         {subject.length > 0 ? (
-                                            subject.map((sub) => <SubjectRow key={sub[0]} subject={sub} />)
+                                            subject.map((sub) => <SubjectRow authUser={authUser} key={sub[0]} subject={sub} />)
                                         ) : (
                                             <tr>
                                                 <td colSpan="6" className="text-center">
@@ -320,7 +344,34 @@ export default function StudentDashboard() {
     );
 }
 
-const SubjectRow = ({ subject }) => {
+const SubjectRow = ({ authUser, subject }) => {
+    const deleteSubject = async (sub) => {
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user/unenroll`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${authUser.token}`,
+                },
+                body: JSON.stringify({ subject: sub }),
+            });
+            if (response.status !== 200) {
+                toast.error("Error deleting subject");
+                console.log("Error deleting subject");
+            } else {
+                const data = await response.json();
+                console.log(data);
+                toast.success("Subject deleted successfully");
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            }
+        } catch (err) {
+            console.log(err);
+
+            toast.error("Error deleting subject");
+        }
+    };
     return (
         <tr key={subject[0]} className="border-b">
             <td className="px-4 py-3">{subject[1]}</td>
@@ -330,7 +381,7 @@ const SubjectRow = ({ subject }) => {
             <td className="px-4 py-3">{subject[5]}</td>
             <td className="px-4 py-3">
                 <div className="flex items-center gap-2">
-                    <button className="bg-white text-gray-500 px-2 py-1 rounded-md hover:bg-gray-100 transition-colors">
+                    <button className="bg-white text-gray-500 px-2 py-1 rounded-md hover:bg-gray-100 transition-colors" onClick={() => deleteSubject(subject[0])}>
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="h-4 w-4">
                             <path
                                 strokeLinecap="round"
@@ -351,6 +402,7 @@ const ExamRow = ({ exam }) => {
             <td className="px-4 py-3">{exam[0]}</td>
             <td className="px-4 py-3">{exam[2]}</td>
             <td className="px-4 py-3">{exam[3]}</td>
+            <td className="px-4 py-3">{exam[1]}</td>
             <td className="px-4 py-3">{exam[4]}</td>
         </tr>
     );
@@ -400,5 +452,140 @@ const CustomBarChart = ({ exam }) => {
                 <Bar dataKey="score" fill="#8884d8" />
             </BarChart>
         </ResponsiveContainer>
+    );
+};
+
+const Modal = ({ authUser, modal, setModal }) => {
+    const [subjects, setSubjects] = useState([]);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        document.addEventListener("click", (e) => {
+            if (e.target.id === "overlay") {
+                setModal(false);
+            }
+        });
+        fetchSubject();
+        return () => {
+            document.removeEventListener("click", (e) => {
+                if (e.target.id === "overlay") {
+                    setModal(false);
+                }
+            });
+        };
+    }, []);
+    const fetchSubject = async () => {
+        try {
+            setLoading(true);
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user/fetchLeftSubject`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${authUser.token}`,
+                },
+            });
+            if (response.status !== 200) {
+                toast.error("Error fetching subjects");
+                console.log("Error fetching subjects");
+            } else {
+                const data = await response.json();
+                console.log(data);
+                setSubjects(data.subjects);
+                console.log("subjects fetched");
+            }
+        } catch (err) {
+            console.log(err);
+        }
+        setLoading(false);
+    };
+    const addSubject = async (sub) => {
+        console.log(sub);
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user/enroll`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${authUser.token}`,
+                },
+                body: JSON.stringify({ subject: sub }),
+            });
+            if (response.status !== 200) {
+                toast.error("Error adding subject");
+                console.log("Error adding subject");
+            } else {
+                const data = await response.json();
+
+                console.log(data);
+                toast.success("Subject added successfully");
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            }
+        } catch (err) {
+            console.log(err);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div id="overlay" className="h-screen w-screen flex justify-center items-center bg-slate-400">
+                <div className="bg-white p-8 rounded-lg shadow-lg">
+                    <div className="h-screen w-screen flex justify-center items-center bg-slate-400">Loading...</div>;
+                </div>
+            </div>
+        );
+    }
+    return (
+        <div id="overlay" className="h-screen w-screen flex justify-center items-center bg-slate-400">
+            <div className="bg-white p-8 rounded-lg shadow-lg">
+                <div className="flex items-center justify-between">
+                    <h2 className="text-lg font-bold">Add Subject</h2>
+                    <button onClick={() => setModal(false)}>X</button>
+                </div>
+                <div className="w-full mt-4">
+                    <table className="w-full IBM_Plex_Mono text-sm border-collapse">
+                        <thead className="text-md font-bold">
+                            <tr>
+                                <th className="px-4 py-2">Code</th>
+                                <th className="px-4 py-2">Name</th>
+                                <th className="px-4 py-2">Description</th>
+                                <th className="px-4 py-2">Credits</th>
+                                <th className="px-4 py-2">Instructor</th>
+                                <th className="px-4 py-2">Dept.</th>
+                                <th className="px-4 py-2">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {subjects.length > 0 ? (
+                                subjects.map((sub) => (
+                                    <tr key={sub[0]} className="border-b-2 text-center">
+                                        <td className="px-4 py-2">{sub[0]}</td>
+                                        <td className="px-4 py-2">{sub[1]}</td>
+                                        <td className="px-4 py-2">{sub[2]}</td>
+                                        <td className="px-4 py-2">{sub[3]}</td>
+                                        <td className="px-4 py-2">{sub[4] + " " + sub[5]}</td>
+                                        <td className="px-4 py-2">{sub[6]}</td>
+                                        <td className="px-4 py-2">
+                                            <button
+                                                className="bg-[#0070f3] text-white px-4 py-2 rounded-md hover:bg-[#0060d3] transition-colors"
+                                                onClick={() => addSubject(sub[0])}
+                                            >
+                                                Add
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan="7" className="p-4 text-center">
+                                        Registered for all subjects
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     );
 };
