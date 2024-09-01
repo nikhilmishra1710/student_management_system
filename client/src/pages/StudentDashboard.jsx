@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import { useAuthContext } from "../context/AuthContextProvider";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { IconEdit } from "@tabler/icons-react";
 
 export default function StudentDashboard() {
     const { authUser } = useAuthContext();
@@ -125,7 +126,14 @@ export default function StudentDashboard() {
     };
 
     if (loading) {
-        return <div className="flex-1 bg-[#f5f5f5] p-8 md:p-12 lg:p-16">Loading...</div>;
+        return (
+            <div className="h-screen w-screen flex justify-center items-center bg-slate-400">
+                <div className="bg-white p-8 rounded-lg shadow-lg">
+                    <div className="animate-spin h-10 w-10 border-t-2 border-b-2 border-gray-900 rounded-full"></div>
+                </div>
+            </div>
+
+        )
     }
     if (modal) {
         return <Modal authUser={authUser} modal={modal} setModal={setModal} />;
@@ -150,7 +158,7 @@ export default function StudentDashboard() {
                         </button>
                     </div>
                 </div>
-                <div className="grid md:grid-cols-2 gap-8">
+                <div className="grid md:grid-cols-1 gap-8">
                     <div className="bg-white rounded-lg shadow-md">
                         <div className="p-6">
                             <h3 className="text-lg font-bold IBM_Plex_Mono">Enrolled Subjects</h3>
@@ -165,7 +173,7 @@ export default function StudentDashboard() {
                                 </button>
                             </div>
                             <div className="overflow-x-auto max-h-[250px] mt-4">
-                                <table className="w-full text-[0.8rem]">
+                                <table className="w-full text-md">
                                     <thead>
                                         <tr>
                                             <th className="text-left px-4 py-2 font-bold IBM_Plex_Mono">Code</th>
@@ -201,7 +209,7 @@ export default function StudentDashboard() {
                                 <h3 className="text-lg font-bold IBM_Plex_Mono">Upcoming Exams</h3>
                             </div>
                             <div className="overflow-x-auto mt-4 max-h-[250px]">
-                                <table className="w-full text-xs">
+                                <table className="w-full text-md">
                                     <thead>
                                         <tr>
                                             <th className="text-left px-4 py-2 font-bold IBM_Plex_Mono">Exam Id</th>
@@ -236,7 +244,7 @@ export default function StudentDashboard() {
                                 <h3 className="text-lg font-bold IBM_Plex_Mono">Past Exams</h3>
                             </div>
                             <div className="overflow-x-auto mt-4 max-h-[250px]">
-                                <table className="w-full text-xs">
+                                <table className="w-full text-md">
                                     <thead>
                                         <tr>
                                             <th className="text-left px-4 py-2 font-bold IBM_Plex_Mono">Exam Id</th>
@@ -265,7 +273,7 @@ export default function StudentDashboard() {
                         <div className="p-6">
                             <h3 className="text-lg font-bold IBM_Plex_Mono">Subject Performance</h3>
                             <p className="text-gray-500 mt-2 IBM_Plex_Mono">View your past attended exams and scores</p>
-                            <span className="text-sm text-gray-500 mt-2 IBM_Plex_Mono">
+                            <span className="text-md text-gray-500 mt-2 IBM_Plex_Mono">
                                 <select className=" p-1 mt-1 shadow-md" id="perfSub" name="perfSub" onChange={handlePerfSub} value={perfSub}>
                                     <option value="" default disabled hidden>
                                         Select a subject to view performance
@@ -400,7 +408,7 @@ const ExamRow = ({ exam }) => {
     return (
         <tr className="border-b">
             <td className="px-4 py-3">{exam[0]}</td>
-            <td className="px-4 py-3">{exam[2]}</td>
+            <td className="px-4 py-3">{convertDateFormat(exam[2])}</td>
             <td className="px-4 py-3">{exam[3]}</td>
             <td className="px-4 py-3">{exam[1]}</td>
             <td className="px-4 py-3">{exam[4]}</td>
@@ -411,7 +419,7 @@ const ExamRow = ({ exam }) => {
 const PastExamRow2 = ({ exam }) => {
     return (
         <tr className="border-b">
-            <td className="px-4 py-3">{exam[0]}</td>
+            <td className="px-4 py-3">{convertDateFormat(exam[0])}</td>
             <td className="px-4 py-3">{exam[1]}</td>
             <td className="px-4 py-3">{exam[2]}</td>
         </tr>
@@ -422,7 +430,7 @@ const PastExamRow = ({ exam }) => {
     return (
         <tr className="border-b">
             <td className="px-4 py-3">{exam[0]}</td>
-            <td className="px-4 py-3">{exam[2]}</td>
+            <td className="px-4 py-3">{convertDateFormat(exam[2])}</td>
             <td className="px-4 py-3">{exam[3]}</td>
             <td className="px-4 py-3">{exam[1]}</td>
             <td className="px-4 py-3">{exam[4]}</td>
@@ -433,7 +441,7 @@ const PastExamRow = ({ exam }) => {
 const CustomBarChart = ({ exam }) => {
     // Format data
     const data = exam.map((ex) => ({
-        date: ex[0], // Assuming ex[0] is the date
+        date: convertDateFormat(ex[0]), // Assuming ex[0] is the date
         score: ex[2], // Assuming ex[2] is the score
     }));
 
@@ -543,7 +551,7 @@ const Modal = ({ authUser, modal, setModal }) => {
                     <button onClick={() => setModal(false)}>X</button>
                 </div>
                 <div className="w-full mt-4">
-                    <table className="w-full IBM_Plex_Mono text-sm border-collapse">
+                    <table className="w-full IBM_Plex_Mono text-md border-collapse">
                         <thead className="text-md font-bold">
                             <tr>
                                 <th className="px-4 py-2">Code</th>
@@ -589,3 +597,12 @@ const Modal = ({ authUser, modal, setModal }) => {
         </div>
     );
 };
+
+function convertDateFormat(dateStr) {
+    // Split the input date string into an array [yyyy, mm, dd]
+    let date = new Date(dateStr).toISOString().split("T")[0];
+    const [year, month, day] = date.split("-");
+
+    // Rearrange to dd-mm-yyyy format
+    return `${day}-${month}-${year}`;
+}

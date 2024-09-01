@@ -4,6 +4,7 @@ import StudentDashboard from "./pages/StudentDashboard";
 import Login from "./pages/Login";
 import { useAuthContext } from "./context/AuthContextProvider";
 import TeacherDashboard from "./pages/TeacherDashboard";
+import AdminDashboard from "./pages/AdminDashboard";
 
 function App() {
     const { authUser } = useAuthContext();
@@ -17,7 +18,7 @@ function App() {
                 <Route
                     path="/dashboard"
                     element={
-                        authUser ? authUser.role === "STUDENT" ? <StudentDashboard /> : authUser.role === "INSTRUCTOR" ? <TeacherDashboard /> : null : <Navigate to="/login" />
+                        authUser ? authUser.role === "STUDENT" ? <StudentDashboard /> : authUser.role === "INSTRUCTOR" ? <TeacherDashboard /> : <AdminDashboard /> : <Navigate to="/login" />
                     }
                 />
             </Routes>
