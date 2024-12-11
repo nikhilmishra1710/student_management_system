@@ -18,7 +18,17 @@ function App() {
                 <Route
                     path="/dashboard"
                     element={
-                        authUser ? authUser.role === "STUDENT" ? <StudentDashboard /> : authUser.role === "INSTRUCTOR" ? <TeacherDashboard /> : <AdminDashboard /> : <Navigate to="/login" />
+                        authUser ? (
+                            authUser.role === "STUDENT" ? (
+                                <StudentDashboard />
+                            ) : authUser.role === "INSTRUCTOR" ? (
+                                <TeacherDashboard />
+                            ) : (
+                                <AdminDashboard />
+                            )
+                        ) : (
+                            <Navigate to="/login" />
+                        )
                     }
                 />
             </Routes>

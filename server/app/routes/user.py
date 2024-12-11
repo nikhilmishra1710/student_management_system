@@ -177,7 +177,7 @@ def unenroll():
             "SELECT * FROM students WHERE user_id=%s", (verified_token['user_id'],))[0]
         print(request.json)
         course_id = request.json['subject']
-        db.execute_query("DELETE FROM enrollments WHERE student_id=%s AND course_id=%s;",
+        db.execute_query("DELETE FROM enrollments WHERE student_id=%s AND enrollment_id=%s;",
                          (student_id, course_id))
         db.close()
         return jsonify({'message': 'Unenrolled successfully'}), 200

@@ -48,7 +48,7 @@ def signup():
         role = data.get('type').strip()
 
         db = Database()
-
+        
         role_data = db.fetch_one(
             "SELECT * FROM user_roles where typename=%s", (role,))
         role_id = role_data[0]

@@ -220,7 +220,7 @@ export default function TeacherDashboard() {
         <div className="flex-1 bg-[#f5f5f5] p-8 md:p-12 lg:p-16">
             <div className="max-w-6xl mx-auto flex flex-col gap-4">
                 <div className="flex items-center justify-between">
-                    <h1 className="text-2xl font-bold IBM_Plex_Mono">Welcome, {authUser.name}</h1>
+                    <h1 className="text-2xl font-bold IBM_Plex_Mono">Welcome instructor, {authUser.name}</h1>
                     <div className="flex items-center gap-4">
                         <button
                             className="bg-[#0070f3] text-white px-4 py-2 rounded-md hover:bg-[#0060d3] transition-colors"
